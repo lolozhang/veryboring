@@ -1,20 +1,53 @@
 const { series } = require("gulp");
 var gulp = require("gulp")
 var sass = require("gulp-sass")
+var cleanCss = require("gulp-clean-css")
+
+var browserSync = require("browser-sync").create()
+
+var imagemin = require("gulp-imagemin")
 
 
 var runSass = function () {
   // we want to run "sass css/app/scss app.css --watch"
-  return gulp.src("css/app.scss")
+  return gulp.src("src/css/app.scss")
       .pipe(sass())
-      .pipe(gulp.dest("."));
+      .pipe(cleanCss())
+      .pipe(gulp.dest("dist"))
+      .pipe(browserSync.stream())
+}
+
+
+var runHtml = function () {
+  return gulp.src("src/*.html")
+    .pipe(gulp.dest("dist"))
+}
+
+function fonts() {
+  return gulp.src("src/fonts/*")
+    .pipe(gulp.dest("dist/fonts"))
+}
+
+function images() {
+  return gulp.src("src/img/*")
+    .pipe(imagemin())
+    .pipe(gulp.dest("dist/img"))
 }
 
 var watchSass = function () {
-  gulp.watch("css/app.scss", (runSass))
+browserSync.init({
+  server: {
+    baseDir:"dist"
+  }
+})
+
+  gulp.watch("src/*.html",(runHtml)).on("change", browserSync.reload)
+  gulp.watch("src/css/app.scss", (runSass))
+  gulp.watch("src/fonts/*", (fonts))
+  gulp.watch("src/img/*", (images))
 }
 
 
 exports.sass = runSass
-exports.default = series (runSass, watchSass)
+exports.default = series (runHtml, runSass, fonts, images, watchSass)
 exports.watch = watchSass
