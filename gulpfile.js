@@ -7,6 +7,8 @@ var browserSync = require("browser-sync").create()
 
 var imagemin = require("gulp-imagemin")
 
+var ghpages =require ("gh-pages")
+
 
 var runSass = function () {
   // we want to run "sass css/app/scss app.css --watch"
@@ -47,7 +49,10 @@ browserSync.init({
   gulp.watch("src/img/*", (images))
 }
 
-
+var deploePage = function () {
+  return ghpages.publish("dist")
+}
 exports.sass = runSass
 exports.default = series (runHtml, runSass, fonts, images, watchSass)
 exports.watch = watchSass
+exports.deploy = deploePage
