@@ -49,10 +49,10 @@ browserSync.init({
   gulp.watch("src/img/*", (images))
 }
 
-var deploePage = function () {
+var deployPage = function () {
   return ghpages.publish("dist")
 }
 exports.sass = runSass
 exports.default = series (runHtml, runSass, fonts, images, watchSass)
 exports.watch = watchSass
-exports.deploy = deploePage
+exports.deploy = deployPage
