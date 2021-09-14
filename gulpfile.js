@@ -1,19 +1,31 @@
 const { series } = require("gulp");
 var gulp = require("gulp")
-var sass = require("gulp-sass")
 var cleanCss = require("gulp-clean-css")
+var postcss = require("gulp-postcss")
+var concat = require("gulp-concat")
 
 var browserSync = require("browser-sync").create()
 
-var imagemin = require("gulp-imagemin")
+var imagemin = require("gulp-imagemin");
+const { reset } = require("browser-sync");
 
-var ghpages =require ("gh-pages")
 
-
-var runSass = function () {
-  // we want to run "sass css/app/scss app.css --watch"
-  return gulp.src("src/css/app.scss")
-      .pipe(sass())
+var runCss = function () {
+  return gulp.src([
+    "src/css/reset.css",
+    "src/css/typography.css",
+    "src/css/app.css"
+  ])
+      .pipe(
+        postcss([
+          require("autoprefixer"),
+          require("postcss-preset-env")({
+            stage: 1,
+            browser: ["IE 11", "last 2 versions"]
+          })
+        ])
+      )
+      .pipe(concat("app.css"))
       .pipe(cleanCss())
       .pipe(gulp.dest("dist"))
       .pipe(browserSync.stream())
@@ -36,7 +48,7 @@ function images() {
     .pipe(gulp.dest("dist/img"))
 }
 
-var watchSass = function () {
+var watchCss = function () {
 browserSync.init({
   server: {
     baseDir:"dist"
@@ -44,15 +56,13 @@ browserSync.init({
 })
 
   gulp.watch("src/*.html",(runHtml)).on("change", browserSync.reload)
-  gulp.watch("src/css/app.scss", (runSass))
+  gulp.watch("src/css/*", (runCss))
   gulp.watch("src/fonts/*", (fonts))
   gulp.watch("src/img/*", (images))
 }
 
-var deployPage = function () {
-  return ghpages.publish("dist")
-}
-exports.sass = runSass
-exports.default = series (runHtml, runSass, fonts, images, watchSass)
-exports.watch = watchSass
-exports.deploy = deployPage
+
+
+exports.css = runCss
+exports.default = series (runHtml, runCss, fonts, images, watchCss)
+exports.watch = watchCss
